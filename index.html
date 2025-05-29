@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollegeTips Photo Gallery</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fd79a8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f6fa;
+            color: var(--dark);
+        }
+        
+        .gallery-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+
+        
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .gallery-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .gallery-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            aspect-ratio: 1/1;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        .item-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-item:hover .item-overlay {
+            transform: translateY(0);
+        }
+        
+        .item-overlay h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .item-overlay p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+        
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 5px;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            transform: translateY(-50%);
+        }
+        
+        .lightbox-nav button {
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox-nav button:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .lightbox-caption {
+            color: white;
+            text-align: center;
+            margin-top: 1rem;
+            max-width: 600px;
+        }
+        
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+            
+            .gallery-header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .filter-buttons {
+                gap: 0.3rem;
+            }
+            
+            .filter-btn {
+                padding: 0.4rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        
+.gallery-item {
+    perspective: 1000px;
+}
+
+.gallery-item img {
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.gallery-item:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.gallery-item:hover img {
+    transform: scale(1.15) rotate(1deg);
+    filter: brightness(1.05);
+}
+
+.item-overlay {
+    background: linear-gradient(to top, rgba(108, 92, 231, 0.9), transparent);
+    backdrop-filter: blur(5px);
+    padding: 1.5rem;
+}
+
+.item-overlay h3 {
+    transform: translateY(20px);
+    transition: transform 0.3s ease 0.1s;
+}
+
+.item-overlay p {
+    transform: translateY(30px);
+    opacity: 0;
+    transition: all 0.3s ease 0.2s;
+}
+
+.gallery-item:hover .item-overlay h3,
+.gallery-item:hover .item-overlay p {
+    transform: translateY(0);
+    opacity: 1;
+}
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <div class="gallery-header">
+            <h1>CollegeTips Moments</h1>
+            <p>Capturing the fun, creativity, and hard work behind the scenes</p>
+        </div>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="team">Team Vibes</button>
+            <button class="filter-btn" data-filter="campaigns">Creative Campaigns</button>
+            <button class="filter-btn" data-filter="workplay">Work Hard, Play Hard</button>
+            <button class="filter-btn" data-filter="bts">Behind The Scenes</button>
+        </div>
+        
+        <div class="gallery-grid">
+           
+            <div class="gallery-item" data-category="team">
+                <img src="/Gallery College Tips/image1.webp">
+                <div class="item-overlay">
+                    <h3>Brainstorm Session</h3>
+                    <p>Our team planning the next big campaign</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="team">
+                <img src="/Gallery College Tips/images10.jpg" alt="Team celebration">
+                <div class="item-overlay">
+                    <h3>Goal Achieved!</h3>
+                    <p>Celebrating our 10K followers milestone</p>
+                </div>
+            </div>
+            
+            
+            <div class="gallery-item" data-category="campaigns">
+                <img src="/Gallery College Tips/image3.jpg" alt="Marketing campaign">
+                <div class="item-overlay">
+                    <h3>Amazing Campaign</h3>
+                    <p>Our most popular Instagram campaign</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="campaigns">
+                <img src="/Gallery College Tips/college hack.jpg" alt="Social media post">
+                <div class="item-overlay">
+                    <h3>#CollegeHacks</h3>
+                    <p>Viral tips series that students loved</p>
+                </div>
+            </div>
+            
+            
+            <div class="gallery-item" data-category="workplay">
+                <img src="/Gallery College Tips/image4.webp" alt="Team working">
+                <div class="item-overlay">
+                    <h3>Content Creation Day</h3>
+                    <p>Prepping a month's worth of content</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="workplay">
+                <img src="/Gallery College Tips/image5.webp" alt="Team party">
+                <div class="item-overlay">
+                    <h3> Party</h3>
+                    <p>Rewarding ourselves after finals week</p>
+                </div>
+            </div>
+            
+            
+            <div class="gallery-item" data-category="bts">
+                <img src="/Gallery College Tips/image6.webp" alt="Content shooting">
+                <div class="item-overlay">
+                    <h3>Reel Shoot</h3>
+                    <p>Making our viral dorm hacks video</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="bts">
+                <img src="/Gallery College Tips/script.jpg" alt="Team discussion">
+                <div class="item-overlay">
+                    <h3>Script Writing</h3>
+                    <p>Crafting the perfect caption</p>
+                </div>
+            </div>
+            
+           
+            <div class="gallery-item" data-category="team">
+                <img src="/Gallery College Tips/images7.jpg" alt="Team collaboration">
+                <div class="item-overlay">
+                    <h3>Collaboration Day</h3>
+                    <p>Working with campus influencers</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="campaigns">
+                <img src="/Gallery College Tips/instagram.jpg" alt="Social media strategy">
+                <div class="item-overlay">
+                    <h3>Instagram Takeover</h3>
+                    <p>Student ambassador program</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="workplay">
+                <img src="/Gallery College Tips/team.jpg" alt="Team lunch">
+                <div class="item-overlay">
+                    <h3>Team Lunch</h3>
+                    <p>Fueling up between classes</p>
+                </div>
+            </div>
+            
+            <div class="gallery-item" data-category="bts">
+                <img src="/Gallery College Tips/image9.webp" alt="Editing content">
+                <div class="item-overlay">
+                    <h3>Editing Suite</h3>
+                    <p>Making our content pop</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close">&times;</span>
+            <img src="" alt="Lightbox Image">
+            <div class="lightbox-caption"></div>
+            <div class="lightbox-nav">
+                <button class="lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+                <button class="lightbox-next"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+       
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            
+          
+                    filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    const filterValue = button.getAttribute('data-filter');
+                    
+                    galleryItems.forEach(item => {
+                        if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            
+            const lightbox = document.querySelector('.lightbox');
+            const lightboxImg = lightbox.querySelector('img');
+            const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+            const lightboxClose = lightbox.querySelector('.lightbox-close');
+            const lightboxPrev = lightbox.querySelector('.lightbox-prev');
+            const lightboxNext = lightbox.querySelector('.lightbox-next');
+            
+            let currentImageIndex = 0;
+            const images = Array.from(galleryItems).map(item => ({
+                src: item.querySelector('img').getAttribute('src'),
+                title: item.querySelector('h3').textContent,
+                desc: item.querySelector('p').textContent
+            }));
+            
+            galleryItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    currentImageIndex = index;
+                    updateLightbox();
+                    lightbox.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+            
+            function updateLightbox() {
+                lightboxImg.setAttribute('src', images[currentImageIndex].src);
+                lightboxCaption.innerHTML = `<h3>${images[currentImageIndex].title}</h3><p>${images[currentImageIndex].desc}</p>`;
+            }
+            
+            lightboxClose.addEventListener('click', () => {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+            
+            lightboxPrev.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                updateLightbox();
+            });
+            
+            lightboxNext.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                updateLightbox();
+            });
+            
+            
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) {
+                    lightbox.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            
+            document.addEventListener('keydown', (e) => {
+                if (lightbox.classList.contains('active')) {
+                    if (e.key === 'Escape') {
+                        lightbox.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                    } else if (e.key === 'ArrowLeft') {
+                        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                        updateLightbox();
+                    } else if (e.key === 'ArrowRight') {
+                        currentImageIndex = (currentImageIndex + 1) % images.length;
+                        updateLightbox();
+                    }
+                }
+            });
+            
+        });
+    </script>
+</body>
+</html>
